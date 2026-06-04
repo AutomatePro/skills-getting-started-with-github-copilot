@@ -106,3 +106,25 @@ def signup_for_activity(activity_name: str, email: str):
     
     activity["participants"].append(email)
     return {"message": f"Signed up {email} for {activity_name}"}
+
+
+@app.delete("/activities/{activity_name}/signup")
+def remove_participant(activity_name: str, email: str):
+    """Remove a student from an activity"""
+    if activity_name not in activities:
+        raise HTTPException(status_code=404, detail="Activity not found")
+
+    activity = activities[activity_name]
+    normalized_email = email.strip().lower()
+
+    participant_index = next(
+        (index for index, participant in enumerate(activity["participants"])
+         if participant.strip().lower() == normalized_email),
+        None
+    )
+
+    if participant_index is None:
+        raise HTTPException(status_code=404, detail="Participant not found")
+
+    removed_email = activity["participants"].pop(participant_index)
+    return {"message": f"Removed {removed_email} from {activity_name}"}
